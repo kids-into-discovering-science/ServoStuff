@@ -33,12 +33,20 @@ int dir1PinA = 2;
 int dir2PinA = 3;
 int speedPinA = 4; // Needs to be a PWM pin to be able to control motor speed
 
-int speed = 25; // 25% duty cycle
-int oneIncr = 50; // one increment is 50 ms 
+int speed = 55; // 55% duty cycle
+int oneIncr = 100; // one increment is 100 ms 
 
 // Potentiometer
-// int potWiper = A6;
-//int vlot = 0;
+int potWiper = A6;
+int vlot = 0;  // That is, "volt", but not quite as it might be someone's reserved word.
+               // With oneIcr = 100 ms and speed = 55:  
+               // Fully W vlot is ~706, 699 -> 713.
+               // Fully C is ~278, 268 -> 288.
+               // So range is ~428 units of vlot.  
+               // Range is a little less than 180 deg, call it 160 deg.
+               // So 428/160 ~=2.5 units per degree.
+               // Travels full range with about 150 Ws or Cs.  
+               // So ~1 unit per degree.
 
 // Switches
 // boolean CWlim = false;
@@ -49,6 +57,7 @@ int oneIncr = 50; // one increment is 50 ms
 void setup()
 { 
   Serial.begin(9600);  // initialize serial communication @ 9600 baud:
+                       // Ahah!  In the IDE need to select Tools | Port | whichever looks right.
 
   pinMode(dir1PinA, OUTPUT); //Define L298N Dual H-Bridge Motor Controller Pins
   pinMode(dir2PinA, OUTPUT);
@@ -56,11 +65,11 @@ void setup()
 
   analogWrite(speedPinA, 0);//Sets inital speed variable via PWM to zero (stopped)
 
- /*  vlot = analogRead(potWiper); // Start with correct values
+  vlot = analogRead(potWiper); // Start with correct values
   digitalWrite(dir1PinA, LOW); // Set direction to 
   digitalWrite(dir2PinA, HIGH);
-  CClim = 
-  */
+  Serial.print("vlot = "); // Starting position is here.
+  Serial.println(vlot);
 }
 
 void loop()
@@ -75,11 +84,16 @@ void loop()
     if (inByte == 67 or inByte == 99) // "C" or "c"--Increment Clockwise
     { digitalWrite(dir1PinA, LOW);
       digitalWrite(dir2PinA, HIGH);
-      Serial.println("Motor CW"); // Prints out “Motor 1 CW” on the serial monitor
-      Serial.println("   "); // Creates a blank line printed on the serial monitor2
+      Serial.print("Motor CW.  voltage changes from "); // Prints on the serial monitor
+      vlot = analogRead(potWiper);
+      Serial.print(vlot);
+      Serial.print("V changing to ");
       analogWrite(speedPinA, speed);
-      delay(50);
+      delay(oneIncr);
       analogWrite(speedPinA, 0);
+      vlot = analogRead(potWiper);
+      Serial.print(vlot);
+      Serial.println("V.   "); // Creates a blank line printed on the serial monitor2
     }
 
     if (inByte == 87 or inByte == 119) // "W" or "w"--Increment Counterclockwise
@@ -89,7 +103,7 @@ void loop()
       Serial.println("Motor CCW"); 
       Serial.println("   "); 
       analogWrite(speedPinA, speed);
-      delay(50);
+      delay(oneIncr);
       analogWrite(speedPinA, 0);
     }
 
@@ -127,5 +141,9 @@ void loop()
 
     }
   }
+  else
+  {   vlot = analogRead(potWiper);
+      Serial.println(vlot);
+      delay(1000);
+  }
 }
-
