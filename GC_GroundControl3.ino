@@ -1,4 +1,4 @@
-/* GROUND CONTROL v3
+/* GROUND CONTROL 3v0
  *  
  *  I2C and ADXL343 are up and running.  Reports m/s^2.  
  *  
